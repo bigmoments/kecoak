@@ -2,7 +2,7 @@
 name: kecoak
 description: >
   Membasmi bug seperti membasmi kecoak: sampai ke sarangnya, bukan cuma yang
-  kelihatan — supaya tidak muncul lagi. Disiplin diagnosis + fix permanen dua jalur:
+  kelihatan, supaya tidak muncul lagi. Disiplin diagnosis + fix permanen dua jalur:
   Bug Rusak (fungsional: reproduksi dulu, diagnosis berhipotesis, cari akar,
   petakan dampak, kunci dengan regression test, visualisasi graf) dan Security Hardening (threat
   model ringkas, fix di trust boundary, verifikasi adversarial, sweep pola
@@ -19,24 +19,24 @@ version: 1.0.0
 > Membasmi bug seperti membasmi kecoak: semprot yang kelihatan saja = besok
 > muncul lagi. Harus sampai ke sarangnya. Skill ini memaksa disiplin itu.
 
-## Fase 0 — Klasifikasi: Bug Rusak vs Security (wajib pertama)
+## Fase 0: Klasifikasi Bug Rusak vs Security (wajib pertama)
 
-Tentukan dulu jenisnya. Cara fix dan cara verifikasinya beda — salah klasifikasi
+Tentukan dulu jenisnya. Cara fix dan cara verifikasinya beda, salah klasifikasi
 = fix yang salah.
 
 | Sinyal | Jalur |
 |---|---|
-| Crash, output salah, fitur tidak jalan, UI rusak, lambat | **A — Bug Rusak** |
-| Auth/authz, injection (SQL/OS/command), XSS, CSRF, IDOR, path traversal, SSRF, secret bocor, data sensitif terekspos, endpoint bisa di-abuse | **B — Security Hardening** |
+| Crash, output salah, fitur tidak jalan, UI rusak, lambat | **A: Bug Rusak** |
+| Auth/authz, injection (SQL/OS/command), XSS, CSRF, IDOR, path traversal, SSRF, secret bocor, data sensitif terekspos, endpoint bisa di-abuse | **B: Security Hardening** |
 | Ragu-ragu | Anggap **B** sampai terbukti A. Mengira vuln sebagai bug biasa jauh lebih mahal daripada sebaliknya. |
 
 Contoh jebakan klasifikasi: pesan error menampilkan stack trace (kelihatan bug
 kosmetik → sebenarnya info disclosure); tombol admin disembunyikan tapi endpoint-nya
 terbuka (kelihatan bug UI → sebenarnya broken access control).
 
-## Jalur A — Bug Rusak: loop diagnosis + fix permanen
+## Jalur A (Bug Rusak): loop diagnosis + fix permanen
 
-### A1. Reproduksi dulu — no repro, no fix
+### A1. Reproduksi dulu: no repro, no fix
 
 - Buat **satu perintah loop** yang bisa dijalankan agent: merah saat bug ada,
   hijau saat beres, assert gejala persis seperti laporan (bukan sekadar "tidak crash").
@@ -44,7 +44,7 @@ terbuka (kelihatan bug UI → sebenarnya broken access control).
   perlu). Loop 30 detik yang flaky hampir sama buruknya dengan tidak ada loop.
 - Tidak bisa reproduksi? **Berhenti.** Catat apa yang sudah dicoba, minta artefak
   (log, HAR, rekaman langkah) atau akses ke environment tempat bug muncul. Jangan
-  menebak fix tanpa repro — ini penyebab nomor satu "sudah di-fix" yang fiktif.
+  menebak fix tanpa repro, ini penyebab nomor satu "sudah di-fix" yang fiktif.
 - Bug kadang-kadang: naikkan reproduction rate (loop 100x, stress, persempit
   timing) sampai cukup sering untuk di-debug.
 
@@ -57,11 +57,11 @@ terbuka (kelihatan bug UI → sebenarnya broken access control).
   bukan hipotesis, buang.
 - Tunjukkan daftar ke user sebelum menguji (mereka sering punya info yang
   me-rerank instan, mis. "kemarin baru deploy ubahan di situ"). Jangan blokir
-  kalau user AFK — lanjut dengan peringkatmu.
+  kalau user AFK, lanjut dengan peringkatmu.
 - Uji **satu variabel per satu**. Instrumen: debugger/REPL dulu (satu breakpoint
   > sepuluh log), lalu log ter-target di batas yang membedakan hipotesis.
   Jangan "log semuanya lalu grep".
-- Tag semua log debug dengan prefix unik (mis. `[DBG-xxxx]`) — cleanup nanti
+- Tag semua log debug dengan prefix unik (mis. `[DBG-xxxx]`), cleanup nanti
   tinggal satu grep.
 - **Dilarang melompat ke fix sebelum hipotesis terkonfirmasi.** Di sinilah bug
   "abadi" lahir.
@@ -71,9 +71,9 @@ terbuka (kelihatan bug UI → sebenarnya broken access control).
 
 - Akar = penyebab yang kalau diubah, gejalanya hilang **dan** tidak punya saudara
   kandung. Uji: "kalau fix ini saya revert, apakah bug persisnya kembali?"
-  Kalau tidak, itu perban — bukan akar.
+  Kalau tidak, itu perban, bukan akar.
 - **Sweep saudara kandung:** cari pola yang sama di tempat lain (fungsi serupa,
-  copy-paste, cabang kode paralel). Satu akar sering punya banyak gejala — obati
+  copy-paste, cabang kode paralel). Satu akar sering punya banyak gejala, obati
   semua, bukan satu.
 
 ### A4. Petakan dampak (blast radius)
@@ -86,8 +86,8 @@ terbuka (kelihatan bug UI → sebenarnya broken access control).
 
 ### A5. Fix minimal + kunci dengan regression test
 
-- Perubahan terkecil yang menyentuh akar masalah. Jangan refactor sekalian —
-  refactor = blast radius baru.
+- Perubahan terkecil yang menyentuh akar masalah. Jangan refactor sekalian,
+  karena refactor = blast radius baru.
 - Tulis regression test **dulu** (merah), lalu fix, lalu hijau. Test harus menangkap
   pola bug yang sebenarnya, bukan versi yang disederhanakan sampai kehilangan makna.
 - Kalau tidak ada seam yang tepat untuk test, catat sebagai temuan: arsitektur
@@ -105,19 +105,19 @@ terbuka (kelihatan bug UI → sebenarnya broken access control).
 ### A7. Catat + bersih-bersih
 
 - Commit message menyebut **akar masalah dan hipotesis yang terbukti benar**,
-  bukan cuma gejalanya — debugger berikutnya belajar dari sini.
+  bukan cuma gejalanya, debugger berikutnya belajar dari sini.
 - Kalau bug ini pernah "di-fix" sebelumnya, catat apa yang salah dari fix lama.
 - Hapus semua log `[DBG-xxxx]` (grep prefix) dan prototipe throwaway.
 
-## Jalur B — Security Hardening: disiplin adversarial
+## Jalur B (Security Hardening): disiplin adversarial
 
-Bug security bukan "fitur yang rusak" — ini **celah yang bisa dieksploitasi**.
+Bug security bukan "fitur yang rusak", ini **celah yang bisa dieksploitasi**.
 Cara berpikirnya beda: berpikir seperti penyerang, bukan seperti pengguna.
 
 ### B1. Model ancaman ringkas (5 menit, jangan di-skip)
 
 - Siapa penyerang? (user anonim, user login, insider, bot)
-- Apa yang mereka kontrol? (semua input — anggap input = musuh)
+- Apa yang mereka kontrol? (semua input, anggap input = musuh)
 - Apa dampak kalau berhasil? (baca data orang lain, ubah data, RCE, dsb.)
 - Di mana trust boundary-nya? (pintu masuk: API, form, URL param, file upload, webhook)
 
@@ -140,13 +140,13 @@ Cara berpikirnya beda: berpikir seperti penyerang, bukan seperti pengguna.
 
 - Celah keamanan **jarang sendirian**. Pola yang sama (query tanpa parameter,
   endpoint tanpa authz check, upload tanpa validasi) hampir pasti ada di tempat
-  lain. Cari dan perbaiki semua — satu per satu, terverifikasi.
+  lain. Cari dan perbaiki semua, satu per satu, terverifikasi.
 
 ### B5. Verifikasi adversarial
 
 - Buktikan exploit-nya **gagal**, bukan cuma buktikan fitur normal jalan. Tulis PoC
   test: kirim payload jahat → harus ditolak/dinetralkan.
-- [ ] PoC exploit gagal (sebelum fix: berhasil — buktikan dengan test merah dulu)
+- [ ] PoC exploit gagal (sebelum fix: berhasil, buktikan dengan test merah dulu)
 - [ ] Jalur normal tetap berfungsi (tidak over-block sampai fitur mati)
 - [ ] Tidak ada jalur bypass (parameter lain, method lain, endpoint kembar)
 
@@ -160,13 +160,13 @@ Cara berpikirnya beda: berpikir seperti penyerang, bukan seperti pengguna.
 ## Visualisasi bug / bugraph (wajib, bukan hiasan)
 
 Setelah A2–A4 (atau B1/B4), sajikan analisis sebagai **graf** lewat HTML widget
-(`widget.create_html_widget`) — bukan teks panjang. Dua graf:
+(`widget.create_html_widget`), bukan teks panjang. Dua graf:
 
-1. **Rantai penyebab** — simpul: gejala → penyebab antara → **akar** (tandai beda
+1. **Rantai penyebab**: simpul gejala → penyebab antara → **akar** (tandai beda
    warna). Panah = "disebabkan oleh".
    Contoh: `Error 500 di /checkout` → `order.total = null` →
    `diskon tak dihitung saat kupon expired` → **akar: tanpa guard kupon expired**.
-2. **Blast radius** — simpul tengah = fungsi yang diubah; panah keluar = pemanggil
+2. **Blast radius**: simpul tengah = fungsi yang diubah; panah keluar = pemanggil
    / fitur yang terpengaruh. Tiap simpul terdampak wajib dicentang "terverifikasi".
 
 **Aturan graf:**
@@ -174,15 +174,15 @@ Setelah A2–A4 (atau B1/B4), sajikan analisis sebagai **graf** lewat HTML widge
 - Untuk Jalur B, tambah lapis "jalur serangan": simpul input penyerang → trust
   boundary → dampak. Boundary yang belum di-fix ditandai merah.
 
-**Kapan di-render (terikat fase — bukan opsional):**
+**Kapan di-render (terikat fase, bukan opsional):**
 - A2 selesai → rantai penyebab terisi (hipotesis terkonfirmasi = garis penuh).
 - A4 selesai → blast radius terisi.
 - A6 → checklist verifikasi: graf sinkron dengan temuan terakhir.
 - B4/B5 → lapis jalur serangan terisi.
 
 **Output ganda (otomatis, tanpa diminta user):**
-- Widget di chat — untuk dibaca sekarang.
-- File HTML: `~/workspace/bugraph/<nama-kasus>/bugraph-<YYYYMMDD-HHMM>.html` —
+- Widget di chat, untuk dibaca sekarang.
+- File HTML: `~/workspace/bugraph/<nama-kasus>/bugraph-<YYYYMMDD-HHMM>.html`,
   arsip yang bisa dibuka di browser atau dibagikan ke tim. Dibuat otomatis
   setiap sesi kecoak; update berikutnya menimpa file yang sama (satu kasus =
   satu file, selalu versi terakhir).
@@ -191,7 +191,7 @@ Setelah A2–A4 (atau B1/B4), sajikan analisis sebagai **graf** lewat HTML widge
 - Render graf **sekali per sesi** (template HTML + data simpul/edge terpisah).
 - Update berikutnya: kirim **hanya delta** (simpul/edge baru atau berubah), bukan
   render ulang penuh.
-- Temuan kecil dalam fase yang sama dikumpulkan — render ulang maksimal sekali
+- Temuan kecil dalam fase yang sama dikumpulkan, render ulang maksimal sekali
   per fase.
 - Sesi panjang: cabang yang sudah terverifikasi bersih boleh disembunyikan
   (collapse), bukan dihapus.
@@ -213,7 +213,7 @@ Setelah A2–A4 (atau B1/B4), sajikan analisis sebagai **graf** lewat HTML widge
 | Reproduksi dulu sebelum menyentuh kode | Fix berdasarkan tebakan tanpa repro |
 | Kejar sampai akar; buktikan dengan revert-test | Tambah null check tanpa tahu kenapa null |
 | Sweep pola yang sama di seluruh codebase | Satu fix untuk satu gejala padahal akarnya punya lima gejala |
-| Fix minimal — jangan refactor sekalian | Refactor besar dibungkus sebagai "fix bug" |
+| Fix minimal, jangan refactor sekalian | Refactor besar dibungkus sebagai "fix bug" |
 | Kunci dengan regression test (merah → hijau) | Percaya test yang tidak menangkap pola bug aslinya |
 | Petakan blast radius sebelum mengubah | Ubah fungsi shared tanpa cek pemanggilnya |
 | Security: berpikir seperti penyerang | Security: "tombolnya sudah saya sembunyikan" |
@@ -230,7 +230,7 @@ Setelah A2–A4 (atau B1/B4), sajikan analisis sebagai **graf** lewat HTML widge
 
 ## Relasi opsional dengan skill lain (bukan dependensi)
 
-Skill ini mandiri — bisa dipakai penuh tanpa skill lain. Daftar di bawah hanya
+Skill ini mandiri, bisa dipakai penuh tanpa skill lain. Daftar di bawah hanya
 pintasan bila skill tersebut kebetulan ada, bukan syarat.
 
 - Butuh peta dampak antar fungsi? Pakai `vulture` (call graph) untuk A4 / sweep B4.

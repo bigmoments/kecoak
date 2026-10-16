@@ -17,7 +17,7 @@ All notable changes to this skill are documented here. Format follows [Keep a Ch
   (+ attack path for Track B) via HTML widget. **Do & Don't** table.
   Merged mp-diagnosing-bugs-style diagnosis into Track A (tight feedback loop,
   ranked falsifiable hypotheses, targeted instrumentation, tagged debug logs,
-  cleanup) — kecoak is now fully standalone, no longer referencing mp-diagnosing-bugs.
+  cleanup), kecoak is now fully standalone, no longer referencing mp-diagnosing-bugs.
   Bugraph: output ganda otomatis (widget chat + file HTML di ~/workspace/bugraph/),
   terikat ke fase A2/A4/A6/B4-B5 (wajib, bukan opsional); aturan hemat token
   (render sekali, update delta, collapse cabang bersih).
